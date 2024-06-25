@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI with HTML5 UI</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+</head>
+<body>
+    <h1>Welcome to FastAPI with HTML5 UI</h1>
+    <div id="app">
+        <form id="inputForm">
+            <label for="inputString">Enter a string:</label>
+            <input type="text" id="inputString" name="inputString" required>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="result">
+            <h2>Result:</h2>
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Input</th>
+                        <th>Length</th>
+                        <th>Uppercase</th>
+                        <th>Reverse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.getElementById('inputForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inputString = document.getElementById('inputString').value;
+            
+            fetch(`/api/dataframe/${encodeURIComponent(inputString)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#dataTable tbody');
+                    tableBody.innerHTML = ''; // Clear existing rows
+                    
+                    data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${row.input}</td>
+                            <td>${row.length}</td>
+                            <td>${row.uppercase}</td>
+                            <td>${row.reverse}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
