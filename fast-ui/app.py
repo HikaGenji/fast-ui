@@ -4,6 +4,12 @@ from fastapi.templating import Jinja2Templates
 import polars as pl
 from typing import Dict
 
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
 
 # Mount the static directory
@@ -28,8 +34,9 @@ async def get_dataframe(input_string: str) -> Dict:
     })
     print(df)
     
-    # Convert DataFrame to dictionary
-    return df.to_dict(as_series=False)
+    result = df.to_dicts()
+    logger.info(f"Returning result: {result}")
+    return {"data": result} 
 
 if __name__ == "__main__":
     import uvicorn

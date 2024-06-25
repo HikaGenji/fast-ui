@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastAPI with HTML5 UI</title>
+    <title>FastAPI with HTML5 UI (Polars)</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
 </head>
 <body>
-    <h1>Welcome to FastAPI with HTML5 UI</h1>
+    <h1>Welcome to FastAPI with HTML5 UI (using Polars)</h1>
     <div id="app">
         <form id="inputForm">
             <label for="inputString">Enter a string:</label>
@@ -30,30 +30,47 @@
                 </tbody>
             </table>
         </div>
+        <div id="debug"></div>
     </div>
     <script>
         document.getElementById('inputForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const inputString = document.getElementById('inputString').value;
+            const debugDiv = document.getElementById('debug');
+            
+            debugDiv.innerHTML = `Sending request for: ${inputString}<br>`;
             
             fetch(`/api/dataframe/${encodeURIComponent(inputString)}`)
-                .then(response => response.json())
-                .then(data => {
+                .then(response => {
+                    debugDiv.innerHTML += `Response status: ${response.status}<br>`;
+                    return response.json();
+                })
+                .then(response => {
+                    debugDiv.innerHTML += `Received data: ${JSON.stringify(response)}<br>`;
+                    
                     const tableBody = document.querySelector('#dataTable tbody');
                     tableBody.innerHTML = ''; // Clear existing rows
                     
-                    data.forEach(row => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${row.input}</td>
-                            <td>${row.length}</td>
-                            <td>${row.uppercase}</td>
-                            <td>${row.reverse}</td>
-                        `;
-                        tableBody.appendChild(tr);
-                    });
+                    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+                        response.data.forEach(row => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${row.input || ''}</td>
+                                <td>${row.length || ''}</td>
+                                <td>${row.uppercase || ''}</td>
+                                <td>${row.reverse || ''}</td>
+                            `;
+                            tableBody.appendChild(tr);
+                        });
+                        debugDiv.innerHTML += 'Table updated successfully<br>';
+                    } else {
+                        debugDiv.innerHTML += 'Error: Received data is not in the expected format<br>';
+                    }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    debugDiv.innerHTML += `Error occurred: ${error.message}<br>`;
+                });
         });
     </script>
 </body>
